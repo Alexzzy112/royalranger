@@ -26,12 +26,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
-  fs.mkdirSync(path.join(__dirname, 'uploads'));
-}
+
 
 const upload = multer({
-  dest: path.join(__dirname, 'uploads'),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 4 * 1024 * 1024 },
   fileFilter(req, file, cb) {
     if (!file.mimetype.startsWith('image/')) {
@@ -249,7 +247,7 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
 
   try {
     // Upload photo to Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.upload(photo.path, {
+    const cloudinaryResult = await cloudinary.uploader.upload(photo.buffer, {
       folder: 'royal-rangers/profiles',
       public_id: `${unique_id}-profile`,
       transformation: [{ width: 300, height: 300, crop: 'fill' }]
@@ -273,16 +271,10 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
       updated_at: new Date()
     });
 
-    // Remove local file after upload
-    fs.unlinkSync(photo.path);
-
     res.json({ success: true, unique_id });
   } catch (err) {
-    console.error('Error uploading photo:', err);
-    // Remove local file if upload fails
-    if (photo && photo.path) {
-      fs.unlinkSync(photo.path);
-    }
+    res.status(500).json({ error: 'Unable to save registration.' });
+  }
     res.status(500).json({ error: 'Unable to save registration.' });
   }
 });
