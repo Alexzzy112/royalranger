@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Admin login for Royal Rangers Nigeria Southwest Zone 2 portal.">
+  <title>Admin Login | Royal Rangers</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="container" style="padding: 5rem 0;">
+    <section class="section">
+      <div class="section-title">
+        <span class="badge">Admin Portal</span>
+        <h2>Secure Login</h2>
+        <p>Login with administrator credentials to access the member database and portal tools.</p>
+      </div>
+      <div class="contact-card">
+        <% if (error) { %>
+          <p style="color:#ff8a65; font-weight:700;"><%= error %></p>
+        <% } %>
+        <form action="/admin/login" method="post">
+          <div class="form-grid">
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required>
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" required>
+            </div>
+          </div>
+          <button type="submit" class="button">Sign In</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

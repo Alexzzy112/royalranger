@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Submit feedback or complaints to Royal Rangers Nigeria Southwest Zone 2.">
+  <title>Feedback | Royal Rangers Nigeria Southwest Zone 2</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container navbar">
+      <a class="brand" href="/">
+        <img src="/images/logo.svg" alt="Royal Rangers Nigeria Southwest Zone 2">
+        
+      </a>
+      <button class="nav-toggle" aria-expanded="false">Menu</button>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+                <a href="/leadership.html">Leaders</a>
+        <details class="nav-dropdown">
+          <summary>Leadership</summary>
+          <div class="dropdown-menu">
+            <a href="/leadership.html">Leadership</a>
+            <a href="/leader-qualification.html">Leader Qualification</a>
+            <a href="/ranking-promotion.html">Ranking & Promotion</a>
+            <a href="/wearing-uniform.html">Wearing Uniform</a>
+          </div>
+        </details>
+        <a href="/units.html">Unit</a>
+        <details class="nav-dropdown">
+          <summary>Programs</summary>
+          <div class="dropdown-menu">
+            <a href="/programs.html">Programs</a>
+            <a href="/media.html">Media</a>
+            <a href="/announcements.html">News</a>
+            <a href="/contact.html">Contact</a>
+            <a href="/feedback.html">Feedback</a>
+            <a href="/register.html">Register</a>
+          </div>
+        </details>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="section-title">
+        <span class="badge">Feedback & Complaints</span>
+        <h2>Share Your Feedback</h2>
+        <p>We value your comments, suggestions, and feedback. Please use this form to report issues or share your thoughts about Royal Rangers Nigeria Southwest Zone 2.</p>
+      </div>
+      <div class="contact-card">
+        <form id="feedback-form">
+          <div class="form-grid">
+            <div class="field">
+              <label for="full_name">Full Name</label>
+              <input id="full_name" name="full_name" type="text" required>
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required>
+            </div>
+            <div class="field">
+              <label for="subject">Subject</label>
+              <input id="subject" name="subject" type="text" required>
+            </div>
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" required></textarea>
+            </div>
+          </div>
+          <button type="submit" class="button"><span id="submit-text">Submit Feedback</span></button>
+          <p id="feedback-message" style="margin-top:1rem;color:var(--accent);"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <div class="footer-row">
+      <div><p>Your feedback helps us serve better. All submissions are reviewed by administrators.</p></div>
+    </div>
+  </footer>
+  <script src="/js/main.js"></script>
+  <script src="/js/feedback.js"></script>
+</body>
+</html>
+
+
+

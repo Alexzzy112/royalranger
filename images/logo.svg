@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+  <!-- Background -->
+  <rect width="300" height="100" fill="#1a3a2a"/>
+  
+  <!-- Shield/Badge background -->
+  <circle cx="45" cy="50" r="30" fill="#c41e3a" stroke="#fff" stroke-width="2"/>
+  
+  <!-- Star center -->
+  <polygon points="45,20 50,35 66,35 53,45 58,60 45,50 32,60 37,45 24,35 40,35" fill="#ffd700" stroke="#003366" stroke-width="1"/>
+  
+  <!-- Text: ROYAL RANGERS -->
+  <text x="85" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ffd700" letter-spacing="2">
+    ROYAL RANGERS
+  </text>
+  
+  <!-- Text: NIGERIA -->
+  <text x="85" y="60" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#ffd700" letter-spacing="1">
+    NIGERIA
+  </text>
+  
+  <!-- Text: SOUTHWEST ZONE 2 -->
+  <text x="85" y="80" font-family="Arial, sans-serif" font-size="12" fill="#ffd700" letter-spacing="0.5">
+    SOUTHWEST ZONE 2
+  </text>
+</svg>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Register as a member for Royal Rangers Nigeria Southwest Zone 2.">
+  <title>Register | Royal Rangers Nigeria Southwest Zone 2</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container navbar">
+      <a class="brand" href="/">
+        <img src="/images/logo.svg" alt="Royal Rangers Nigeria Southwest Zone 2">
+        
+      </a>
+      <button class="nav-toggle" aria-expanded="false">Menu</button>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+                <a href="/leadership.html">Leaders</a>
+        <details class="nav-dropdown">
+          <summary>Leadership</summary>
+          <div class="dropdown-menu">
+            <a href="/leadership.html">Leadership</a>
+            <a href="/leader-qualification.html">Leader Qualification</a>
+            <a href="/ranking-promotion.html">Ranking & Promotion</a>
+            <a href="/wearing-uniform.html">Wearing Uniform</a>
+          </div>
+        </details>
+        <a href="/units.html">Unit</a>
+        <details class="nav-dropdown">
+          <summary>Programs</summary>
+          <div class="dropdown-menu">
+            <a href="/programs.html">Programs</a>
+            <a href="/media.html">Media</a>
+            <a href="/announcements.html">News</a>
+            <a href="/contact.html">Contact</a>
+            <a href="/feedback.html">Feedback</a>
+            <a href="/register.html">Register</a>
+          </div>
+        </details>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="section-title">
+        <span class="badge">Membership Registration</span>
+        <h2>Register for the Member Database Portal</h2>
+        <p>Complete the form to join the Royal Rangers Nigeria Southwest Zone 2 member database for administrative review.</p>
+      </div>
+      <div class="contact-card">
+        <form id="register-form" enctype="multipart/form-data">
+          <div class="form-grid">
+            <div class="field">
+              <label for="full_name">Full Name</label>
+              <input id="full_name" name="full_name" type="text" required>
+            </div>
+            <div class="field">
+              <label for="rank">Rank</label>
+              <input id="rank" name="rank" type="text" required>
+            </div>
+            <div class="field">
+              <label for="district">District</label>
+              <select id="district" name="district" required>
+                <option value="">Select a District</option>
+                <option value="Apapa">Apapa</option>
+                <option value="Badagry">Badagry-West</option>
+                <option value="Epe">Epe</option>
+                <option value="Ikorodu">Ikorodu</option>
+                <option value="Lagos">Lagos</option>
+                <option value="Lagos Mainland">Lagos Mainland</option>
+                <option value="Lagos West">Lagos West</option>
+                <option value="Lekki">Lekki</option>
+                <option value="Sango">Sango</option>
+                <option value="Sango">Badagry Grace</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="unit">Unit</label>
+              <select id="unit" name="unit" required>
+                <option value="">Select a Unit</option>
+                <option value="Missions and Spiritual emphasis unit">Missions and Spiritual emphasis unit</option>
+                <option value="Finance unit">Finance unit</option>
+                <option value="Training unit">Training unit</option>
+                <option value="Provost unit">Provost unit</option>
+                <option value="Administrators Academy & Secretariat">Administrators Academy & Secretariat</option>
+                <option value="Media & Communication">Media & Communication</option>
+                <option value="Publicity & Mobilisation">Publicity & Mobilisation</option>
+                <option value="Ranking & Promotions board">Ranking & Promotions board</option>
+                <option value="Welfare Unit">Welfare Unit</option>
+                <option value="Intelligence & Surveillance unit">Intelligence & Surveillance unit</option>
+                <option value="Internal audit">Internal audit</option>
+                <option value="Medical Unit">Medical Unit</option>
+                <option value="Band / Music unit">Band / Music unit</option>
+                <option value="Sports unit">Sports unit</option>
+                <option value="Ordinance unit">Ordinance unit</option>
+                <option value="Legal unit">Legal unit</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="date_of_birth">Date of Birth</label>
+              <input id="date_of_birth" name="date_of_birth" type="date" required>
+            </div>
+            <div class="field">
+              <label for="email">Email Address</label>
+              <input id="email" name="email" type="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" placeholder="Create a password" required>
+            </div>
+            <div class="field">
+              <label for="confirm_password">Confirm Password</label>
+              <input id="confirm_password" name="confirm_password" type="password" placeholder="Confirm password" required>
+            </div>
+            <div class="field">
+              <label for="contact">Phone Number:</label>
+              <input id="contact" name="contact" type="number" placeholder="Enter your Phone Number" required>
+            </div>
+            <div class="field">
+              <label for="photo">Passport Photograph</label>
+              <input id="photo" name="photo" type="file" accept="image/*" required>
+            </div>
+          </div>
+          <button type="submit" class="button">Submit Registration</button>
+          <p id="register-message" style="margin-top:1rem;color:var(--accent);"></p>
+          <p style="margin-top:0.75rem; font-size:0.95rem; color:#444;">Already registered? <a href="/applicant-login.html">Login to view your details</a>.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <div class="footer-row">
+      <div><p>Online registration captures structured member details for secure portal management.</p></div>
+    </div>
+  </footer>
+<script src="/js/main.js"></script>
+   <script src="/js/register.js"></script>
+</body>
+</html>
+
+
+
