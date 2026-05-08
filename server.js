@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
@@ -13,12 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'royal-rangers-secret-2026';
 
-initializeDatabase().then(() => {
-  console.log('Database initialized successfully');
-}).catch(err => {
-  console.error('Failed to initialize database:', err);
-  process.exit(1);
-});
+
 
 // Configure Cloudinary
 cloudinary.config({
@@ -46,12 +42,29 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname)));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+const MONGODB_URI = process.env.ENV === 'DEV' ? process.env.LOCAl_MONGODB_URI : process.env.MONGODB_URI;
+
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: MONGODB_URI,
+    collectionName: 'sessions'
+  }),
   cookie: { maxAge: 1000 * 60 * 60 }
 }));
+
+// Ensure database is initialized before handling any requests
+app.use(async (req, res, next) => {
+  try {
+    await initializeDatabase();
+    next();
+  } catch (err) {
+    console.error('DB Initialization Error:', err);
+    res.status(500).json({ error: 'Internal Server Error: Database connection failed' });
+  }
+});
 
 const ensureAdmin = (req, res, next) => {
   if (req.session && req.session.adminAuthenticated) {
@@ -487,6 +500,10 @@ app.use((err, req, res, next) => {
   next();
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
