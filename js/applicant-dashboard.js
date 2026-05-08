@@ -14,6 +14,7 @@ async function loadApplicantDetails() {
 
   dashboardContent.innerHTML = `
     <div class="profile-summary">
+      ${applicant.photo_url ? `<img src="${applicant.photo_url}" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem;">` : ''}
       <h3>${applicant.full_name}</h3>
       <p><strong>Email:</strong> ${applicant.email}</p>
       <p><strong>Phone:</strong> ${applicant.contact}</p>

@@ -5,7 +5,8 @@ const path = require('path');
 let client;
 let db;
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const MONGODB_URI = process.env.ENV === 'DEV' ? process.env.LOCAl_MONGODB_URI : process.env.MONGODB_URI;
+console.log(MONGODB_URI,process.env.LOCAl_MONGODB_URI,process.env.MONGODB_URI)
 const DB_NAME = process.env.DB_NAME || 'royalrangers';
 
 async function initializeDatabase() {

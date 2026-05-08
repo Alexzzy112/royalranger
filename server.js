@@ -4,6 +4,8 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
 const { initializeDatabase, getDb, closeDatabase } = require('./db');
 
 const app = express();
@@ -15,6 +17,13 @@ initializeDatabase().then(() => {
 }).catch(err => {
   console.error('Failed to initialize database:', err);
   process.exit(1);
+});
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
@@ -236,10 +245,18 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
 
   const password_hash = await bcrypt.hash(password, 10);
   const unique_id = generateUniqueId();
-  const photoPath = `/uploads/${path.basename(photo.path)}`;
   const status = 'pending';
 
   try {
+    // Upload photo to Cloudinary
+    const cloudinaryResult = await cloudinary.uploader.upload(photo.path, {
+      folder: 'royal-rangers/profiles',
+      public_id: `${unique_id}-profile`,
+      transformation: [{ width: 300, height: 300, crop: 'fill' }]
+    });
+
+    const photoUrl = cloudinaryResult.secure_url;
+
     const result = await members.insertOne({
       unique_id,
       full_name,
@@ -250,14 +267,22 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
       email,
       password_hash,
       contact,
-      photo_path: photoPath,
+      photo_url: photoUrl,
       status,
       created_at: new Date(),
       updated_at: new Date()
     });
 
+    // Remove local file after upload
+    fs.unlinkSync(photo.path);
+
     res.json({ success: true, unique_id });
   } catch (err) {
+    console.error('Error uploading photo:', err);
+    // Remove local file if upload fails
+    if (photo && photo.path) {
+      fs.unlinkSync(photo.path);
+    }
     res.status(500).json({ error: 'Unable to save registration.' });
   }
 });
@@ -269,22 +294,24 @@ function ensureApplicant(req, res, next) {
   res.status(401).json({ error: 'Unauthorized.' });
 }
 
-app.post('/api/applicant/login', (req, res) => {
+app.post('/api/applicant/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
   
-  const db = getDb();
-  const members = db.collection('members');
-  
-  members.findOne({ email }, async (err, member) => {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to process login.' });
-    }
+  try {
+    const db = getDb();
+    const members = db.collection('members');
+    
+    const member = await members.findOne({ email });
+
     if (!member) {
       return res.status(400).json({ error: 'Invalid email or password.' });
     }
+
+    const bcrypt = require('bcrypt');
+
     if (!member.password_hash) {
       return res.status(400).json({ error: 'Account has no password set.' });
     }
@@ -295,7 +322,9 @@ app.post('/api/applicant/login', (req, res) => {
     req.session.applicantAuthenticated = true;
     req.session.applicantId = member._id.toString(); // Convert ObjectId to string
     res.json({ success: true });
-  });
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to process login.' });
+  }
 });
 
 app.get('/api/applicant/me', ensureApplicant, async (req, res) => {
@@ -344,63 +373,105 @@ app.post('/api/members/approve-all/pending', ensureAdmin, async (req, res) => {
   }
 });
 
-app.get('/api/members/:id/photo', ensureAdmin, (req, res) => {
-  db.get('SELECT photo_path FROM members WHERE id = ?', [req.params.id], (err, row) => {
-    if (err || !row) {
+app.get('/api/members/:id/photo', ensureAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const members = db.collection('members');
+    const ObjectId = require('mongodb').ObjectId;
+
+    const row = await members.findOne({ _id: new ObjectId(req.params.id) }, { projection: { photo_url: 1 } });
+
+    if (!row || !row.photo_url) {
       return res.status(404).json({ error: 'Photo not found.' });
     }
-    const filePath = path.join(__dirname, row.photo_path);
-    res.download(filePath);
-  });
-});
 
-app.post('/api/feedback', (req, res) => {
-  const { full_name, email, subject, message } = req.body;
-  if (!full_name || !email || !subject || !message) {
-    return res.status(400).json({ error: 'All fields are required.' });
+    res.json({ photo_url: row.photo_url });
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to fetch photo.' });
   }
-  db.run(
-    'INSERT INTO feedback (full_name, email, subject, message, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-    [full_name, email, subject, message, 'new'],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: 'Unable to submit feedback.' });
-      }
-      res.json({ success: true });
-    }
-  );
 });
 
-app.get('/api/feedback', ensureAdmin, (req, res) => {
-  db.all('SELECT * FROM feedback ORDER BY created_at DESC', (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to fetch feedback.' });
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const { full_name, email, subject, message } = req.body;
+    if (!full_name || !email || !subject || !message) {
+      return res.status(400).json({ error: 'All fields are required.' });
     }
-    res.json(rows);
-  });
-});
-
-app.post('/api/feedback/:id/respond', ensureAdmin, (req, res) => {
-  const { admin_response, status } = req.body;
-  db.run(
-    'UPDATE feedback SET admin_response = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-    [admin_response, status || 'responded', req.params.id],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: 'Unable to update feedback.' });
-      }
-      res.json({ success: true });
-    }
-  );
-});
-
-app.delete('/api/feedback/:id', ensureAdmin, (req, res) => {
-  db.run('DELETE FROM feedback WHERE id = ?', [req.params.id], function (err) {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to delete feedback.' });
-    }
+    
+    const db = getDb();
+    const feedback = db.collection('feedback');
+    
+    await feedback.insertOne({
+      full_name,
+      email,
+      subject,
+      message,
+      status: 'new',
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+    
     res.json({ success: true });
-  });
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to submit feedback.' });
+  }
+});
+
+app.get('/api/feedback', ensureAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const feedback = db.collection('feedback');
+    const rows = await feedback.find().sort({ created_at: -1 }).toArray();
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to fetch feedback.' });
+  }
+});
+
+app.post('/api/feedback/:id/respond', ensureAdmin, async (req, res) => {
+  try {
+    const { admin_response, status } = req.body;
+    const db = getDb();
+    const feedback = db.collection('feedback');
+    const ObjectId = require('mongodb').ObjectId;
+    
+    const result = await feedback.updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { 
+        $set: { 
+          admin_response, 
+          status: status || 'responded', 
+          updated_at: new Date() 
+        } 
+      }
+    );
+    
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'Feedback not found.' });
+    }
+    
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to update feedback.' });
+  }
+});
+
+app.delete('/api/feedback/:id', ensureAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const feedback = db.collection('feedback');
+    const ObjectId = require('mongodb').ObjectId;
+    
+    const result = await feedback.deleteOne({ _id: new ObjectId(req.params.id) });
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Feedback not found.' });
+    }
+    
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to delete feedback.' });
+  }
 });
 
 app.use((err, req, res, next) => {

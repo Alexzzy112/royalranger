@@ -58,4 +58,4 @@ A full static and backend-enabled website with a membership database portal for 
 ## Notes
 - Uploaded images are stored in `uploads/`.
 - The portal is protected with session-based authentication.
-- The application uses SQLite for database storage.
+- The application uses MongoDB for database storage.

@@ -25,8 +25,7 @@ function renderMembers(members) {
     <div class="card" style="padding:1.5rem;">
       <div style="display:grid; grid-template-columns:120px 1fr; gap:1.5rem;">
         <div style="display:flex; flex-direction:column; gap:0.75rem;">
-          <img src="${member.photo_path}" alt="Passport" style="width:100%; border-radius:12px; object-fit:cover;">
-          <a href="/api/members/${member.id}/photo" target="_blank" class="button" style="font-size:0.85rem; padding:0.6rem 1rem; text-align:center; background:#2196F3;">Download</a>
+          <img src="${member.photo_url}" alt="Passport" style="width:100%; border-radius:12px; object-fit:cover;">
         </div>
         <div>
           <h3>${member.full_name}</h3>
