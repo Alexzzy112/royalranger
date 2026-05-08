@@ -1,0 +1,4 @@
+◇ injected env (4) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+Server running on http://localhost:3000
+Connected to MongoDB
+Default admin created: admin@royalrangerssw2.ng

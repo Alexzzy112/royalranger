@@ -5,8 +5,7 @@ const path = require('path');
 let client;
 let db;
 
-const MONGODB_URI = (process.env.ENV === 'DEV' && !process.env.VERCEL) ? process.env.LOCAl_MONGODB_URI : process.env.MONGODB_URI;
-console.log(MONGODB_URI,process.env.LOCAl_MONGODB_URI,process.env.MONGODB_URI)
+const MONGODB_URI = (process.env.ENV === 'DEV' && !process.env.VERCEL) ? process.env.LOCAL_MONGODB_URI : process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || 'royalrangers';
 
 let dbPromise = null;
@@ -16,7 +15,7 @@ async function initializeDatabase() {
   
   dbPromise = (async () => {
     try {
-      client = new MongoClient(MONGODB_URI);
+      client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
       await client.connect();
       db = client.db(DB_NAME);
       console.log('Connected to MongoDB');

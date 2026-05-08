@@ -12,7 +12,7 @@ const { initializeDatabase, getDb, closeDatabase } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SESSION_SECRET = process.env.SESSION_SECRET || 'royal-rangers-secret-2026';
+const SESSION_SECRET = process.env.SESSION_SECRET;
 
 
 
@@ -39,19 +39,27 @@ const upload = multer({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const MONGODB_URI = (process.env.ENV === 'DEV' && !process.env.VERCEL) ? process.env.LOCAl_MONGODB_URI : process.env.MONGODB_URI;
+const MONGODB_URI = (process.env.ENV === 'DEV' && !process.env.VERCEL) ? process.env.LOCAL_MONGODB_URI : process.env.MONGODB_URI;
+
+let sessionStore;
+try {
+  sessionStore = MongoStore.create({
+    mongoUrl: MONGODB_URI,
+    collectionName: 'sessions'
+  });
+} catch (err) {
+  console.warn('MongoStore unavailable, falling back to MemoryStore:', err.message);
+  sessionStore = new session.MemoryStore();
+}
 
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: MONGODB_URI,
-    collectionName: 'sessions'
-  }),
+  store: sessionStore,
   cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
@@ -59,11 +67,10 @@ app.use(session({
 app.use(async (req, res, next) => {
   try {
     await initializeDatabase();
-    next();
   } catch (err) {
-    console.error('DB Initialization Error:', err);
-    res.status(500).json({ error: 'Internal Server Error: Database connection failed' });
+    console.warn('Database unavailable, running without DB:', err.message);
   }
+  next();
 });
 
 const ensureAdmin = (req, res, next) => {
@@ -264,26 +271,35 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
   const status = 'pending';
 
   try {
-    // Upload photo to Cloudinary
-    const cloudinaryResult = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'royal-rangers/profiles',
-          public_id: `${unique_id}-profile`,
-          transformation: [
-            { width: 300, height: 300, crop: 'fill' }
-          ]
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
-        }
-      );
+    let photoUrl;
+    const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY;
 
-      streamifier.createReadStream(photo.buffer).pipe(stream);
-    });
-
-    const photoUrl = cloudinaryResult.secure_url;
+    if (useCloudinary) {
+      const cloudinaryResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'royal-rangers/profiles',
+            public_id: `${unique_id}-profile`,
+            transformation: [{ width: 300, height: 300, crop: 'fill' }]
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        streamifier.createReadStream(photo.buffer).pipe(stream);
+      });
+      photoUrl = cloudinaryResult.secure_url;
+    } else {
+      const ext = path.extname(photo.originalname) || '.jpg';
+      const filename = `${unique_id}-profile${ext}`;
+      const uploadDir = path.join(__dirname, 'public', 'uploads', 'profiles');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      fs.writeFileSync(path.join(uploadDir, filename), photo.buffer);
+      photoUrl = `/uploads/profiles/${filename}`;
+    }
 
     const result = await members.insertOne({
       unique_id,
@@ -303,7 +319,7 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
 
     res.json({ success: true, unique_id });
   } catch (err) {
-    console.error('Error uploading photo to Cloudinary:', err);
+    console.error('Error saving registration:', err);
     res.status(500).json({ error: 'Unable to save registration.' });
   }
   // res.status(500).json({ error: 'Unable to save registration.' });
