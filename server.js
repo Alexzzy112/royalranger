@@ -80,6 +80,10 @@ function generateUniqueId() {
   return `${prefix}-${timestamp}-${randomCode}`;
 }
 
+
+app.get('/', (req, res) => {
+  res.render('index');
+});
 app.get('/admin/login', (req, res) => {
   if (req.session && req.session.adminAuthenticated) {
     return res.redirect('/admin/dashboard');
@@ -134,7 +138,7 @@ app.get('/api/members/:id', ensureAdmin, async (req, res) => {
     const members = db.collection('members');
     const ObjectId = require('mongodb').ObjectId;
     const row = await members.findOne({ _id: new ObjectId(req.params.id) });
-    
+
     if (!row) {
       return res.status(404).json({ error: 'Member not found.' });
     }
@@ -150,25 +154,25 @@ app.post('/api/members/:id/approve', ensureAdmin, async (req, res) => {
     if (!['pending', 'approved', 'rejected'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status.' });
     }
-    
+
     const db = getDb();
     const members = db.collection('members');
     const ObjectId = require('mongodb').ObjectId;
-    
+
     const result = await members.updateOne(
       { _id: new ObjectId(req.params.id) },
-      { 
-        $set: { 
+      {
+        $set: {
           status: status,
-          updated_at: new Date() 
+          updated_at: new Date()
         }
       }
     );
-    
+
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Member not found.' });
     }
-    
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Unable to update status.' });
@@ -181,15 +185,15 @@ app.put('/api/members/:id', ensureAdmin, async (req, res) => {
     if (!full_name || !rank || !district || !unit || !date_of_birth || !contact) {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
-    
+
     const db = getDb();
     const members = db.collection('members');
     const ObjectId = require('mongodb').ObjectId;
-    
+
     const result = await members.updateOne(
       { _id: new ObjectId(req.params.id) },
-      { 
-        $set: { 
+      {
+        $set: {
           full_name,
           rank,
           district,
@@ -197,15 +201,15 @@ app.put('/api/members/:id', ensureAdmin, async (req, res) => {
           date_of_birth,
           contact,
           status: status || 'pending',
-          updated_at: new Date() 
+          updated_at: new Date()
         }
       }
     );
-    
+
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Member not found.' });
     }
-    
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Unable to update member.' });
@@ -217,13 +221,13 @@ app.delete('/api/members/:id', ensureAdmin, async (req, res) => {
     const db = getDb();
     const members = db.collection('members');
     const ObjectId = require('mongodb').ObjectId;
-    
+
     const result = await members.deleteOne({ _id: new ObjectId(req.params.id) });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Member not found.' });
     }
-    
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Unable to delete member.' });
@@ -262,22 +266,22 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
   try {
     // Upload photo to Cloudinary
     const cloudinaryResult = await new Promise((resolve, reject) => {
-  const stream = cloudinary.uploader.upload_stream(
-    {
-      folder: 'royal-rangers/profiles',
-      public_id: `${unique_id}-profile`,
-      transformation: [
-        { width: 300, height: 300, crop: 'fill' }
-      ]
-    },
-    (error, result) => {
-      if (error) return reject(error);
-      resolve(result);
-    }
-  );
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'royal-rangers/profiles',
+          public_id: `${unique_id}-profile`,
+          transformation: [
+            { width: 300, height: 300, crop: 'fill' }
+          ]
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
 
-  streamifier.createReadStream(photo.buffer).pipe(stream);
-});
+      streamifier.createReadStream(photo.buffer).pipe(stream);
+    });
 
     const photoUrl = cloudinaryResult.secure_url;
 
@@ -302,8 +306,8 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
     console.error('Error uploading photo to Cloudinary:', err);
     res.status(500).json({ error: 'Unable to save registration.' });
   }
-    // res.status(500).json({ error: 'Unable to save registration.' });
-  }
+  // res.status(500).json({ error: 'Unable to save registration.' });
+}
 );
 
 function ensureApplicant(req, res, next) {
@@ -318,11 +322,11 @@ app.post('/api/applicant/login', async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
-  
+
   try {
     const db = getDb();
     const members = db.collection('members');
-    
+
     const member = await members.findOne({ email });
 
     if (!member) {
@@ -352,11 +356,11 @@ app.get('/api/applicant/me', ensureApplicant, async (req, res) => {
     const members = db.collection('members');
     const ObjectId = require('mongodb').ObjectId;
     const member = await members.findOne({ _id: new ObjectId(req.session.applicantId) });
-    
+
     if (!member) {
       return res.status(404).json({ error: 'Applicant not found.' });
     }
-    
+
     // Remove password hash from response for security
     const { password_hash, ...memberData } = member;
     res.json(memberData);
@@ -375,17 +379,17 @@ app.post('/api/members/approve-all/pending', ensureAdmin, async (req, res) => {
   try {
     const db = getDb();
     const members = db.collection('members');
-    
+
     const result = await members.updateMany(
       { status: 'pending' },
-      { 
-        $set: { 
+      {
+        $set: {
           status: 'approved',
-          updated_at: new Date() 
+          updated_at: new Date()
         }
       }
     );
-    
+
     res.json({ success: true, message: `${result.modifiedCount} members approved.` });
   } catch (err) {
     res.status(500).json({ error: 'Unable to approve all members.' });
@@ -416,10 +420,10 @@ app.post('/api/feedback', async (req, res) => {
     if (!full_name || !email || !subject || !message) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
-    
+
     const db = getDb();
     const feedback = db.collection('feedback');
-    
+
     await feedback.insertOne({
       full_name,
       email,
@@ -429,7 +433,7 @@ app.post('/api/feedback', async (req, res) => {
       created_at: new Date(),
       updated_at: new Date()
     });
-    
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Unable to submit feedback.' });
@@ -453,22 +457,22 @@ app.post('/api/feedback/:id/respond', ensureAdmin, async (req, res) => {
     const db = getDb();
     const feedback = db.collection('feedback');
     const ObjectId = require('mongodb').ObjectId;
-    
+
     const result = await feedback.updateOne(
       { _id: new ObjectId(req.params.id) },
-      { 
-        $set: { 
-          admin_response, 
-          status: status || 'responded', 
-          updated_at: new Date() 
-        } 
+      {
+        $set: {
+          admin_response,
+          status: status || 'responded',
+          updated_at: new Date()
+        }
       }
     );
-    
+
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Feedback not found.' });
     }
-    
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Unable to update feedback.' });
@@ -480,13 +484,13 @@ app.delete('/api/feedback/:id', ensureAdmin, async (req, res) => {
     const db = getDb();
     const feedback = db.collection('feedback');
     const ObjectId = require('mongodb').ObjectId;
-    
+
     const result = await feedback.deleteOne({ _id: new ObjectId(req.params.id) });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Feedback not found.' });
     }
-    
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Unable to delete feedback.' });
