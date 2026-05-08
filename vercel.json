@@ -8,7 +8,11 @@
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/admin/(.*)",
       "destination": "/server.js"
     }
   ]
