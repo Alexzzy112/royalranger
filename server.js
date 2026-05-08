@@ -42,7 +42,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname)));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const MONGODB_URI = process.env.ENV === 'DEV' ? process.env.LOCAl_MONGODB_URI : process.env.MONGODB_URI;
+const MONGODB_URI = (process.env.ENV === 'DEV' && !process.env.VERCEL) ? process.env.LOCAl_MONGODB_URI : process.env.MONGODB_URI;
 
 app.use(session({
   secret: SESSION_SECRET,
