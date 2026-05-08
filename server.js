@@ -5,6 +5,7 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 require('dotenv').config();
 const { initializeDatabase, getDb, closeDatabase } = require('./db');
 
@@ -247,11 +248,23 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
 
   try {
     // Upload photo to Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.upload(photo.buffer, {
+    const cloudinaryResult = await new Promise((resolve, reject) => {
+  const stream = cloudinary.uploader.upload_stream(
+    {
       folder: 'royal-rangers/profiles',
       public_id: `${unique_id}-profile`,
-      transformation: [{ width: 300, height: 300, crop: 'fill' }]
-    });
+      transformation: [
+        { width: 300, height: 300, crop: 'fill' }
+      ]
+    },
+    (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    }
+  );
+
+  streamifier.createReadStream(photo.buffer).pipe(stream);
+});
 
     const photoUrl = cloudinaryResult.secure_url;
 
@@ -273,9 +286,10 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
 
     res.json({ success: true, unique_id });
   } catch (err) {
+    console.error('Error uploading photo to Cloudinary:', err);
     res.status(500).json({ error: 'Unable to save registration.' });
   }
-    res.status(500).json({ error: 'Unable to save registration.' });
+    // res.status(500).json({ error: 'Unable to save registration.' });
   }
 );
 
