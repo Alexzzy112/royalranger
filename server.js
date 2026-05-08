@@ -277,7 +277,7 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
   }
     res.status(500).json({ error: 'Unable to save registration.' });
   }
-});
+);
 
 function ensureApplicant(req, res, next) {
   if (req.session && req.session.applicantAuthenticated && req.session.applicantId) {
