@@ -37,9 +37,9 @@ function renderMembers(members) {
           <p><strong>Contact:</strong> ${member.contact}</p>
           <p><strong>DOB:</strong> ${member.date_of_birth}</p>
           <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1rem;">
-            <button class="button" onclick="updateStatus(${member.id}, 'approved')" style="font-size:0.85rem;">Approve</button>
-            <button class="button" style="background:#555;color:#fff; font-size:0.85rem;" onclick="updateStatus(${member.id}, 'rejected')">Reject</button>
-            <button class="button" style="background:#222;color:#fff; font-size:0.85rem;" onclick="removeMember(${member.id})">Delete</button>
+            <button class="button" onclick="updateStatus('${member._id}', 'approved')" style="font-size:0.85rem;">Approve</button>
+            <button class="button" style="background:#555;color:#fff; font-size:0.85rem;" onclick="updateStatus('${member._id}', 'rejected')">Reject</button>
+            <button class="button" style="background:#222;color:#fff; font-size:0.85rem;" onclick="removeMember('${member._id}')">Delete</button>
           </div>
         </div>
       </div>
@@ -108,10 +108,10 @@ function renderFeedback(feedbacks) {
       <p><strong>Status:</strong> ${fb.status}</p>
       ${fb.admin_response ? `<p><strong>Response:</strong> ${fb.admin_response}</p>` : ''}
       <div style="margin-top:1rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-start;">
-        <textarea id="response-${fb.id}" placeholder="Type your response here..." style="flex:1 1 100%; border-radius:12px; padding:0.75rem; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text); min-height:100px;"></textarea>
+          <textarea id="response-${fb._id}" placeholder="Type your response here..." style="flex:1 1 100%; border-radius:12px; padding:0.75rem; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:var(--text); min-height:100px;"></textarea>
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-          <button class="button" onclick="respondToFeedback(${fb.id})" style="margin-top:0.75rem;">Send Response</button>
-          <button class="button" onclick="deleteFeedback(${fb.id})" style="margin-top:0.75rem; background:#d32f2f; color:#fff;">Delete</button>
+          <button class="button" onclick="respondToFeedback('${fb._id}')" style="margin-top:0.75rem;">Send Response</button>
+          <button class="button" onclick="deleteFeedback('${fb._id}')" style="margin-top:0.75rem; background:#d32f2f; color:#fff;">Delete</button>
         </div>
       </div>
     </div>

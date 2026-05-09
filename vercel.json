@@ -6,10 +6,7 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "*.html",
-          "css/**",
-          "js/**",
-          "images/**",
+          "public/**",
           "views/**"
         ]
       }
