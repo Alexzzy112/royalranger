@@ -6,7 +6,7 @@ let client;
 let db;
 
 const MONGODB_URI = (process.env.ENV === 'DEV' && !process.env.VERCEL) ? process.env.LOCAL_MONGODB_URI : process.env.MONGODB_URI;
-const DB_NAME = process.env.DB_NAME || 'royalrangers';
+const DB_NAME = process.env.DB_NAME || 'royalranger';
 
 let dbPromise = null;
 
